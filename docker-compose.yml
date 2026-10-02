@@ -1,0 +1,35 @@
+services:
+  # EL SERVIDOR (NODE.JS + TYPESCRIPT)
+  backend:
+    build: ./backend
+    command: npm run dev  # <-- Fuerza el uso de ts-node-dev
+    # Mapeamos el puerto 3000 de dentro al 3000 de fuera
+    ports:
+      - "3000:3000"
+    # Cargamos las contraseñas de TiDB Cloud
+    env_file:
+      - ./backend/.env
+    environment:
+      - FRONTEND_URL=http://altioram.work.gd
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # LA WEB (VITE + REACT + TAILWIND)
+  frontend:
+    build: ./frontend
+    command: npm run dev  # <-- Fuerza el uso de vite --host
+    ports:
+      - "5173:5173"
+    # Añadimos las variables de entorno para que React las vea
+    environment:
+      - VITE_API_URL=http://altioram.work.gd:3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    # Permite que Vite se mantenga encendido
+    stdin_open: true
+    tty: true
+    # Solo arranca si el backend está listo
+    depends_on:
+      - backend
